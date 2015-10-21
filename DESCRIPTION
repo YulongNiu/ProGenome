@@ -10,6 +10,8 @@ Depends:
 Imports:
     KEGGAPI,
     NCBIAPI,
+    stringr,
+    foreach
 ByteCompile: true
 License: GPL
 LazyData: true
