@@ -1,6 +1,6 @@
 ##' Download genomic genes.
 ##'
-##' Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids.
+##' Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return.
 ##' @title Retrieve genomic genes
 ##' @param KEGGSpe A KEGG species ID
 ##' @return A list. Each element represents a genome, and the gene IDs are in KEGG format.
@@ -34,43 +34,7 @@ getGenomicGenes <- function(KEGGSpe) {
   
   if (genLogic && !refLogic) {
     ## source from GenBank
-    ## extract GB number
-    genomeVec <- c(speInfo$Chromosomes[, 2])
-    ## the length of genomeNum must > 0
-    genomeNum <- str_extract(genomeVec, 'GB: \\w+')
-    genomeName <- paste0('genome', 1:length(genomeNum))
-
-
-    ## NULL if not found
-    plasmidVec <- c(speInfo$Plasmids[, 2])
-    ## the length of plamidNum may be 0, then return character(0)
-    plasmidNum <- str_extract(plasmidVec, 'GB: \\w+')
-    if (length(plasmidNum) == 0) {
-      plasmidName <- character(0)
-    } else {
-      plasmidName <- paste0('plasmid', 1:length(plasmidNum))
-    }
-    
-    ## whole genomes number and names
-    wholeNum <- c(genomeNum, plasmidNum)
-    wholeNames <- c(genomeName, plasmidName)
-
-    wholeGenes <- foreach (i = 1:length(wholeNum)) %do% {
-      eachAnno <- singleGenomeAnno(wholeNum[i], type = 'CDS')
-      eachNames <- names(eachAnno)
-      eachLocs <- lapply(eachAnno, function(x) {
-        geneLoc <- x$GBInterval
-        return(geneLoc)
-      })
-      eachLocs <- do.call(rbind, eachLocs)
-      eachMat <- cbind(paste(KEGGSpe, eachNames, sep = ':'), eachLocs)
-      colnames(eachMat) <- c('geneName', 'From', 'To')
-
-      return(eachMat)
-    }
-
-    names(wholeGenes) <- wholeNames
-    
+    wholeGenes <- getGenesfGenomes(KEGGSpe)
   }
   else if (!genLogic && refLogic) {
     ## source from RefSeq
@@ -132,9 +96,7 @@ getGenesfGenomes <- function(KEGGSpe, ...) {
   wholeGenes <- foreach (i = 1:length(wholeNum)) %do% {
     
     eachAnno <- singleGenomeAnno(wholeNum[i], type = 'CDS', n = 4)
-    
     eachNames <- names(eachAnno)
-    
     eachLocs <- lapply(eachAnno, function(x) {
       ## may have multiple gene locations for one gene
       geneLoc <- x$GBInterval
@@ -144,7 +106,7 @@ getGenesfGenomes <- function(KEGGSpe, ...) {
     eachLocs <- do.call(rbind, eachLocs)
     
     eachMat <- cbind(paste(KEGGSpe,
-                           rep(eachNames, each = eachRepNum),
+                           rep(eachNames, eachRepNum),
                            sep = ':'),
                      eachLocs)
     colnames(eachMat) <- c('geneName', 'From', 'To')
@@ -202,16 +164,19 @@ getGenesfGeneids <- function(KEGGSpe) {
   genomeSeq <- sapply(speInfo, function(x) {
     return(x$Chromosome)
   })
+  genomeSeq <- paste0(genomeType, genomeSeq)
   
-  genomeLoc <- sapply(speInfo, function(x) {
-    ## may have multiple gene location, here return the first
-    return(x$GenomicInfo[1, 3:4])
+  genomeLoc <- lapply(speInfo, function(x) {
+    ## one gene may have multiple location
+    return(x$GenomicInfo[, 3:4, drop = FALSE])
   })
-  genomeLoc <- t(genomeLoc)
+  repNum <- sapply(genomeLoc, nrow)
+  genomeLoc <- do.call(rbind, genomeLoc)
+
   
-  genomeMat <- cbind(names(speInfo),
+  genomeMat <- cbind(rep(names(speInfo), repNum),
                      genomeLoc,
-                     paste0(genomeType, genomeSeq),
+                     rep(genomeSeq, repNum),
                      deparse.level = 0)
   colnames(genomeMat)[1:3] <- c('geneName', 'From', 'To')
   rownames(genomeMat) <- NULL
