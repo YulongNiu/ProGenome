@@ -47,7 +47,6 @@ getGenomicGenes <- function(KEGGSpe) {
 
 
 ##' @inheritParams getGenomicGenes
-##' @param ... Inherited parameters from singleGenomeAnno() of NCBIAPI package
 ##' @return  A list. Each element represents a genome, and the gene IDs are in KEGG format.
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomicGenes
@@ -59,15 +58,9 @@ getGenomicGenes <- function(KEGGSpe) {
 ##' @param KEGGSpe 
 ##'
 ##' 
-getGenesfGenomes <- function(KEGGSpe, ...) {
+getGenesfGenomes <- function(KEGGSpe) {
   
-  ##~~~~~~~~~~~~~~~~~~~~source of genomes~~~~~~~~~~~~~~~~
   speInfo <- getKEGGSpeInfo(KEGGSpe)
-  sourceEle <- speInfo$`Data source`
-
-  genLogic <- grepl('GenBank', sourceEle)
-  refLogic <- grepl('RefSeq', sourceEle)
-  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   ## source from GenBank
   ## extract GB number
@@ -89,13 +82,13 @@ getGenesfGenomes <- function(KEGGSpe, ...) {
   
   ## whole genomes number and names
   wholeNum <- c(genomeNum, plasmidNum)
-  wholeNum <- str_trim(wholeNum)
   wholeNum <- sapply(strsplit(wholeNum, split = ':', fixed = TRUE), '[[', 2)
+  wholeNum <- str_trim(wholeNum)
   wholeNames <- c(genomeName, plasmidName)
 
   wholeGenes <- foreach (i = 1:length(wholeNum)) %do% {
     
-    eachAnno <- singleGenomeAnno(wholeNum[i], type = 'CDS', n = 4)
+    eachAnno <- singleGenomeAnno(wholeNum[i], type = 'gene', n = 4)
     eachNames <- names(eachAnno)
     eachLocs <- lapply(eachAnno, function(x) {
       ## may have multiple gene locations for one gene
@@ -135,7 +128,7 @@ getGenesfGeneids <- function(KEGGSpe) {
 
   speGenes <- convKEGG(KEGGSpe, 'ncbi-geneid')
   speGeneNames <- sapply(strsplit(speGenes[, 1], split = ':', fixed = TRUE), '[[', 2)
-  speInfo <- getNCBIGenesInfo(speGeneNames, n = 4, maxEach = 10000)
+  speInfo <- getNCBIGenesInfo(speGeneNames, n = 4)
   names(speInfo) <- speGenes[, 2]
 
   ## extract genomic
