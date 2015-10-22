@@ -8,14 +8,12 @@
 \usage{
 getGenomicGenes(KEGGSpe)
 
-getGenesfGenomes(KEGGSpe, ...)
+getGenesfGenomes(KEGGSpe)
 
 getGenesfGeneids(KEGGSpe)
 }
 \arguments{
 \item{KEGGSpe}{A KEGG species ID}
-
-\item{...}{Inherited parameters from singleGenomeAnno() of NCBIAPI package}
 
 \item{KEGGSpe}{}
 }
@@ -30,9 +28,11 @@ A list. Each element represents a genome, and the gene IDs are in KEGG format.
 Download genomic genes.
 }
 \details{
-Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return.
+Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return. If the genome has no gene featurs, "NULL" will be returned.
 }
 \examples{
+## no genomic genes
+noGenes <- getGenomicGenes('csu')
 \dontrun{
 ## from GenBank
 ## one genome with four plasmids

@@ -1,10 +1,12 @@
 ##' Download genomic genes.
 ##'
-##' Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return.
+##' Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return. If the genome has no gene featurs, "NULL" will be returned.
 ##' @title Retrieve genomic genes
 ##' @param KEGGSpe A KEGG species ID
 ##' @return A list. Each element represents a genome, and the gene IDs are in KEGG format.
 ##' @examples
+##' ## no genomic genes
+##' noGenes <- getGenomicGenes('csu')
 ##' \dontrun{
 ##' ## from GenBank
 ##' ## one genome with four plasmids
@@ -89,20 +91,26 @@ getGenesfGenomes <- function(KEGGSpe) {
   wholeGenes <- foreach (i = 1:length(wholeNum)) %do% {
     
     eachAnno <- singleGenomeAnno(wholeNum[i], type = 'gene', n = 4)
-    eachNames <- names(eachAnno)
-    eachLocs <- lapply(eachAnno, function(x) {
-      ## may have multiple gene locations for one gene
-      geneLoc <- x$GBInterval
-      return(geneLoc)
-    })
-    eachRepNum <- sapply(eachLocs, nrow)
-    eachLocs <- do.call(rbind, eachLocs)
-    
-    eachMat <- cbind(paste(KEGGSpe,
-                           rep(eachNames, eachRepNum),
-                           sep = ':'),
-                     eachLocs)
-    colnames(eachMat) <- c('geneName', 'From', 'To')
+
+    if (is.null(eachAnno)) {
+      ## no genomic genes were found
+      eachMat <- NULL
+    } else {
+      eachNames <- names(eachAnno)
+      eachLocs <- lapply(eachAnno, function(x) {
+        ## may have multiple gene locations for one gene
+        geneLoc <- x$GBInterval
+        return(geneLoc)
+      })
+      eachRepNum <- sapply(eachLocs, nrow)
+      eachLocs <- do.call(rbind, eachLocs)
+      
+      eachMat <- cbind(paste(KEGGSpe,
+                             rep(eachNames, eachRepNum),
+                             sep = ':'),
+                       eachLocs)
+      colnames(eachMat) <- c('geneName', 'From', 'To')
+    }
 
     return(eachMat)
   }
