@@ -14,8 +14,6 @@ getGenesfGeneids(KEGGSpe)
 }
 \arguments{
 \item{KEGGSpe}{A KEGG species ID}
-
-\item{KEGGSpe}{}
 }
 \value{
 A list. Each element represents a genome, and the gene IDs are in KEGG format.
@@ -25,17 +23,20 @@ A list. Each element represents a genome, and the gene IDs are in KEGG format.
 A list. Each element represents a genome, and the gene IDs are in KEGG format.
 }
 \description{
-Download genomic genes.
+Retrieve genomic genes.
 }
 \details{
-Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return. If the genome has no gene featurs, "NULL" will be returned.
+Retrieve the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For some gene, multiple location may return. If the genome has no gene featurs, "NULL" will be returned.
+getGenesfGenomes(): retrieve whole genomic genes from NCBI genomes.
+getGenesfGeneids(): retrieve whole genomic genes from NCBI gene IDs.
+getGenomicGenes(): a wrapped of these top two function, which trys getGenesfGeneids() at first and then getGenesfGenomes() if the genome is from GenBank.
 }
 \examples{
 ## no genomic genes
 noGenes <- getGenomicGenes('csu')
 \dontrun{
 ## from GenBank
-## one genome with four plasmids
+## one genome with three plasmids
 hxaGenes <- getGenomicGenes('hxa')
 
 ## from RefSeq
@@ -51,5 +52,4 @@ Yulong Niu \email{niuylscu@gmail.com}
 
 Yulong Niu \email{niuylscu@gmail.com}
 }
-\keyword{internal}
 

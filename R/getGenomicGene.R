@@ -1,6 +1,9 @@
-##' Download genomic genes.
+##' Retrieve genomic genes.
 ##'
-##' Download the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For one gene, multiple location may return. If the genome has no gene featurs, "NULL" will be returned.
+##' Retrieve the whole genomic gene from a prokaryotic species. The function returns gene location in all genomes, including the cellular genoms and plasmids. For some gene, multiple location may return. If the genome has no gene featurs, "NULL" will be returned.
+##' getGenesfGenomes(): retrieve whole genomic genes from NCBI genomes.
+##' getGenesfGeneids(): retrieve whole genomic genes from NCBI gene IDs.
+##' getGenomicGenes(): a wrapped of these top two function, which trys getGenesfGeneids() at first and then getGenesfGenomes() if the genome is from GenBank.
 ##' @title Retrieve genomic genes
 ##' @param KEGGSpe A KEGG species ID
 ##' @return A list. Each element represents a genome, and the gene IDs are in KEGG format.
@@ -9,7 +12,7 @@
 ##' noGenes <- getGenomicGenes('csu')
 ##' \dontrun{
 ##' ## from GenBank
-##' ## one genome with four plasmids
+##' ## one genome with three plasmids
 ##' hxaGenes <- getGenomicGenes('hxa')
 ##' 
 ##' ## from RefSeq
@@ -56,8 +59,7 @@ getGenomicGenes <- function(KEGGSpe) {
 ##' @importFrom NCBIAPI singleGenomeAnno
 ##' @importFrom stringr str_extract str_trim
 ##' @importFrom foreach foreach %do%
-##' @keywords internal
-##' @param KEGGSpe 
+##' @export
 ##'
 ##' 
 getGenesfGenomes <- function(KEGGSpe) {
@@ -129,7 +131,7 @@ getGenesfGenomes <- function(KEGGSpe) {
 ##' @importFrom KEGGAPI convKEGG
 ##' @importFrom NCBIAPI getNCBIGenesInfo
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
-##' @keywords internal
+##' @export
 ##'
 ##' 
 getGenesfGeneids <- function(KEGGSpe) {
