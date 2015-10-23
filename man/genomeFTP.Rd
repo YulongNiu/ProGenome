@@ -3,11 +3,14 @@
 \name{getSpeFtpUrl}
 \alias{getSpeFtpUrl}
 \alias{listFileFtpUrl}
+\alias{read.gffUrl}
 \title{Retrieve genome FTP URL}
 \usage{
 getSpeFtpUrl(KEGGSpe, database = "GenBank")
 
 listFileFtpUrl(ftpUrl)
+
+read.gffUrl(gffUrl)
 }
 \arguments{
 \item{KEGGSpe}{A KEGG species ID}
@@ -15,26 +18,45 @@ listFileFtpUrl(ftpUrl)
 \item{database}{"GenBank" or "RefSeq".}
 
 \item{ftpUrl}{FTP url that can be the output of function  getFtpUrl()}
+
+\item{gffUrl}{FTP url of one gff file.}
 }
 \value{
 FTP url.
 
 A list of download FTP urls
+
+A table of raw gff file
 }
 \description{
-Get genome FTP url
+Get genomic information NCBI FTP url
 }
 \details{
 getFtpUrl(): get the FTP url storing genome information from GenBank or RefSeq database. This function is mainly used to get the species genome assembly information.
 listFtpFileUrl(): list the file download FTP urls.
+read.gffUrl(): read in raw gff file from a FTP url.
 }
 \examples{
+## E. coli genome GenBank FTP
 ecoliUrl <- getSpeFtpUrl('eco')
+## list E. coli FTP files
 ecoliFiles <- listFileFtpUrl(ecoliUrl)
+## read in gff file
+gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
+ecoligff <- read.gffUrl(gffUrl)
+\dontrun{
+draliUrl <- getSpeFtpUrl('dra')
+draliFiles <- listFileFtpUrl(draliUrl)
+}
 }
 \author{
 Yulong Niu \email{niuylscu@gmail.com}
 
 Yulong Niu \email{niuylscu@gmail.com}
+
+Yulong Niu \email{niuylscu@gmail.com}
+}
+\references{
+How to read in gz files into R from FTP URL \url{https://stackoverflow.com/questions/9548630/read-gzipped-csv-directly-from-a-url-in-r}
 }
 

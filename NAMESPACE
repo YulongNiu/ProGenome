@@ -3,6 +3,7 @@
 export(getGenomicGenes)
 export(getSpeFtpUrl)
 export(listFileFtpUrl)
+export(read.gffUrl)
 importFrom(KEGGAPI,convKEGG)
 importFrom(KEGGAPI,getKEGGSpeInfo)
 importFrom(NCBIAPI,getNCBIGenesInfo)
