@@ -18,7 +18,7 @@ getLocsfgff(KEGGSpe)
 \arguments{
 \item{KEGGSpe}{A KEGG species ID}
 
-\item{database}{"GenBank" or "RefSeq".}
+\item{database}{"GenBank", "RefSeq", or c("GenBank", "RefSeq").}
 
 \item{ftpUrl}{FTP url that can be the output of function  getFtpUrl()}
 
@@ -40,13 +40,13 @@ Get genomic information NCBI FTP url
 getFtpUrl(): get the FTP url storing genome information from GenBank or RefSeq database. This function is mainly used to get the species genome assembly information.
 listFtpFileUrl(): list the file download FTP urls.
 read.gffUrl(): read in raw gff file from a FTP url.
-getLocsfgff(): get genomic gene location information from gff file.
+getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
 }
 \examples{
 ## E. coli genome GenBank FTP
-ecoliUrl <- getSpeFtpUrl('eco')
+ecoliUrl <- getSpeFtpUrl('eco', c('GenBank', 'RefSeq'))
 ## list E. coli FTP files
-ecoliFiles <- listFileFtpUrl(ecoliUrl)
+ecoliFiles <- listFileFtpUrl(ecoliUrl[1])
 ## read in gff file
 gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ecoligff <- read.gffUrl(gffUrl)

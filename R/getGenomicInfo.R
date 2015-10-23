@@ -3,7 +3,7 @@
 ##' getFtpUrl(): get the FTP url storing genome information from GenBank or RefSeq database. This function is mainly used to get the species genome assembly information.
 ##' listFtpFileUrl(): list the file download FTP urls.
 ##' read.gffUrl(): read in raw gff file from a FTP url.
-##' getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then change the database to GenBank.
+##' getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
 ##' @title Retrieve genome FTP URL
 ##' @inheritParams getGenomicGenes
 ##' @param database "GenBank", "RefSeq", or c("GenBank", "RefSeq").
@@ -23,7 +23,7 @@
 ##' @importFrom KEGGAPI getKEGGSpeInfo
 ##' @importFrom stringr str_extract str_detect
 ##' @importFrom RCurl getURL
-##' @importFrom xml2 read_xml xml_attr
+##' @importFrom xml2 read_xml xml_attr xml_text
 ##' @importFrom foreach foreach %do%
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
@@ -181,7 +181,11 @@ getLocsfgff <- function(KEGGSpe) {
 
   
   ##~~~~~~~~~~~~~~~~~~~~read in gff files~~~~~~~~~~~~~~~~~~
-  speUrl <- getSpeFtpUrl(KEGGSpe, database = 'RefSeq')
+  speUrl <- getSpeFtpUrl(KEGGSpe, database = c('GenBank', 'RefSeq'))
+  if (length(speUrl) == 2) {
+    ## choose RefSeq
+    speUrl <- speUrl[names(speUrl) == 'RefSeq']
+  } else {}
   speFiles <- listFileFtpUrl(speUrl)
   gffUrl <- speFiles[grepl('gff', speFiles)]
   spegff <- read.gffUrl(gffUrl)
