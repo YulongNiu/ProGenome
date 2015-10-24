@@ -2,7 +2,7 @@ Package: ProGenome
 Title: A package for processing prokaryotic genomes
 Description: Download whole prokaryotic genomic genes,
     prediction of transcription unit, and retrieve upstream sequences.
-Version: 0.0.4
+Version: 0.0.5
 Author: Yulong Niu <niuylscu@gmail.com>
 Maintainer: Yulong Niu <niuylscu@gmail.com>
 Depends:
