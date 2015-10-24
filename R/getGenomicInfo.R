@@ -72,7 +72,6 @@ getSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
   return(ftpUrl)
-  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 }
 
 
@@ -214,7 +213,9 @@ getLocsfgff <- function(KEGGSpe) {
 
   gList <- vector('list', length(gNames))
   for (i in 1:nrow(gMat)) {
-    gList[[i]] <- ExtractLocs(spegff[gMat[i, 1] : gMat[i, 2], ])
+    eachLocMat <- ExtractLocs(spegff[gMat[i, 1] : gMat[i, 2], ])
+    eachLocMat[, 1] <- paste(KEGGSpe, eachLocMat[, 1], sep = ':')
+    gList[[i]] <- eachLocMat
   }
   names(gList) <- gNames
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
