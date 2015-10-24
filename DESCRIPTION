@@ -13,7 +13,8 @@ Imports:
     stringr,
     foreach,
     RCurl,
-    xml2
+    xml2,
+    tools
 ByteCompile: true
 License: GPL
 LazyData: true

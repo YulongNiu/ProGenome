@@ -25,7 +25,7 @@ Get genomic genes location of KEGG species from NCBI gff files
 \details{
 getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
 
-download.Spegff(): download gff and md5sum check files.
+download.Spegff(): download gff and md5sum check files. If the md5sum check fails, download the files again until it passes.
 }
 \examples{
 draLocs <- GetLocsfgff('dra')

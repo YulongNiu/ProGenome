@@ -2,7 +2,7 @@
 ##'
 ##' getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
 ##'
-##' download.Spegff(): download gff and md5sum check files.
+##' download.Spegff(): download gff and md5sum check files. If the md5sum check fails, download the files again until it passes.
 ##' @title Get genomic gene locations from the gff file
 ##' @inheritParams getGenomicGenes
 ##' @return GetLocsfgff(): a list of genomes containing gene location information. The locus_tags is used for the gene names.
@@ -111,11 +111,23 @@ GetLocsfgff <- function(KEGGSpe) {
 ##' \dontrun{
 ##' download.Spegff('eco', 'tmpEco')
 ##' }
+##' @importFrom tools md5sum
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
 ##'
 ##' 
 download.Spegff <- function(KEGGSpe, saveFolder){
+
+  ExtractGffMd5 <- function(mdfile) {
+    ## USE: extract md5sum string for gff file
+    ## INPUT: 'mdfile' is the md5sum file path
+    ## OUTPUT: md5sum string
+
+    mdMat <- read.table(mdfile, stringsAsFactors = FALSE)
+    mdStr <- mdMat[grepl('gff|md5checksums', mdMat[, 2]), 1]
+
+    return(mdStr)
+  }
 
   ## check folder
   if (!dir.exists(saveFolder)) {
@@ -133,9 +145,22 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     eachLast <- x[length(x)]
     return(eachLast)
   })
+
+  ## check md5
+  while(TRUE) {
+    for(i in 1:length(fileUrls)) {
+      download.file(fileUrls[i], file.path(saveFolder, fileNames[i]))
+    }
+
+    md5File <- file.path(saveFolder, fileNames[grepl('md5checksums', fileNames)])
+    gffFile <- file.path(saveFolder, fileNames[grepl('gff', fileNames)])
+
+    if (md5sum(gffFile) == ExtractGffMd5(md5File)) {
+      break
+    } else {
+      print('Md5sum check failed. Try to download files again. \n')
+    }
     
-  for(i in 1:length(fileUrls)) {
-    download.file(fileUrls[i], file.path(saveFolder, fileNames[i]))
   }
 }
   
