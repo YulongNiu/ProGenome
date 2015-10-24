@@ -2,7 +2,7 @@
 ##'
 ##' getFtpUrl(): get the FTP url storing genome information from GenBank or RefSeq database. This function is mainly used to get the species genome assembly information.
 ##' listFtpFileUrl(): list the file download FTP urls.
-##' read.gffUrl(): read in raw gff file from a FTP url.
+##' read.gff(): read in a raw gff file (or gz file) from the local disk or web url.
 ##' getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
 ##' @title Retrieve genome FTP URL
 ##' @inheritParams getGenomicGenes
@@ -15,7 +15,7 @@
 ##' ecoliFiles <- listFileFtpUrl(ecoliUrl[1])
 ##' ## read in gff file
 ##' gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
-##' ecoligff <- read.gffUrl(gffUrl)
+##' ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
 ##' \dontrun{
 ##' draliUrl <- getSpeFtpUrl('dra')
 ##' draliFiles <- listFileFtpUrl(draliUrl)
@@ -58,7 +58,9 @@ getSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ftpUrl <- foreach(i = 1:length(ftpLine), .combine = c) %do% {
     eachFtpXml <- read_xml(ftpLine[i])
     eachFtpUrl <- xml_attr(eachFtpXml, 'href')
-    eachName <- sapply(strsplit(xml_text(eachFtpXml), ' ', fixed = TRUE),
+    eachName <- sapply(strsplit(xml_text(eachFtpXml),
+                                ' ',
+                                fixed = TRUE),
                        '[[',
                        1)
     names(eachFtpUrl) <- eachName
@@ -97,7 +99,9 @@ listFileFtpUrl <- function(ftpUrl) {
 
 
 
-##' @param gffUrl FTP url of one gff file.
+##' @param filePath A local file path or a web url.
+##' @param isurl Whether a url (TRUE) or not (FALSE).
+##' @param isgz Whether a gzfile (TRUE) or not (FALSE).
 ##' @return A table of raw gff file
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
@@ -105,22 +109,38 @@ listFileFtpUrl <- function(ftpUrl) {
 ##' @export
 ##'
 ##' 
-read.gffUrl <- function(gffUrl) {
+read.gff <- function(filePath, isurl = FALSE, isgz = FALSE) {
 
-  ## read gz files from stream
-  conStream <- gzcon(url(gffUrl))
-  eachLine <- readLines(conStream)
-  gffMat <- read.table(textConnection(eachLine),
+  if (isurl && isgz) {
+    ## read gz gff file from url
+    conStream <- gzcon(url(filePath))
+  }
+  else if (isurl && !isgz) {
+    ## read gff file from url
+    conStream <- url(filePath)
+  }
+  else if (!isurl && isgz) {
+    ## read gz gff file from local disk
+    conStream <- gzcon(gzfile(filePath))
+  }
+  else {
+    ## read gff file from local disk
+    conStream <- file(filePath)
+  }
+  
+  eachLine <- textConnection(readLines(conStream))
+  close(conStream)
+  gffMat <- read.table(eachLine,
                        sep = '\t',
                        quote = '',
                        stringsAsFactors = FALSE)
+  close(eachLine)
 
   ## remove rows and columns names
   row.names <- NULL
   col.names <- NULL
 
   return(gffMat)
-  
 }
 
 
