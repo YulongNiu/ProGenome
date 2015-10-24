@@ -1,6 +1,8 @@
 ##' Get genomic genes location of KEGG species from NCBI gff files
 ##'
 ##' getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
+##'
+##' download.Spegff(): download gff and md5sum check files.
 ##' @title Get genomic gene locations from the gff file
 ##' @inheritParams getGenomicGenes
 ##' @return GetLocsfgff(): a list of genomes containing gene location information. The locus_tags is used for the gene names.
@@ -95,6 +97,46 @@ GetLocsfgff <- function(KEGGSpe) {
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   return(gList)
+}
+
+
+
+
+
+##' @inheritParams getGenomicGenes
+##' @param saveFolder A folder to save gff and md5sum check files. If the folder does not exist, then creat a one at first.
+##' @return download.Spegff(): download the gff and md5sum files.
+##' @rdname locsFromgff
+##' @examples
+##' \dontrun{
+##' download.Spegff('eco', 'tmpEco')
+##' }
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @export
+##'
+##' 
+download.Spegff <- function(KEGGSpe, saveFolder){
+
+  ## check folder
+  if (!dir.exists(saveFolder)) {
+    dir.create(saveFolder)
+  } else {}
+  
+  ## FTP urls
+  speUrl <- AutoSpeFtpUrl(KEGGSpe)
+  speFiles <- ListFileFtpUrl(speUrl)
+
+  ## select and download gff and md5sum check files
+  fileUrls <- speFiles[grepl('gff|md5checksums', speFiles)]
+  splitNames <- strsplit(fileUrls, split = '/', fixed = TRUE)
+  fileNames <- sapply(splitNames, function(x) {
+    eachLast <- x[length(x)]
+    return(eachLast)
+  })
+    
+  for(i in 1:length(fileUrls)) {
+    download.file(fileUrls[i], file.path(saveFolder, fileNames[i]))
+  }
 }
   
 

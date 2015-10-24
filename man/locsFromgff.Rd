@@ -2,29 +2,43 @@
 % Please edit documentation in R/locgff.R
 \name{GetLocsfgff}
 \alias{GetLocsfgff}
+\alias{download.Spegff}
 \title{Get genomic gene locations from the gff file}
 \usage{
 GetLocsfgff(KEGGSpe)
+
+download.Spegff(KEGGSpe, saveFolder)
 }
 \arguments{
 \item{KEGGSpe}{A KEGG species ID}
+
+\item{saveFolder}{A folder to save gff and md5sum check files. If the folder does not exist, then creat a one at first.}
 }
 \value{
 GetLocsfgff(): a list of genomes containing gene location information. The locus_tags is used for the gene names.
+
+download.Spegff(): download the gff and md5sum files.
 }
 \description{
 Get genomic genes location of KEGG species from NCBI gff files
 }
 \details{
 getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
+
+download.Spegff(): download gff and md5sum check files.
 }
 \examples{
 draLocs <- GetLocsfgff('dra')
 \dontrun{
 hxaLocs <- GetLocsfgff('hxa')
 csuLocs <- GetLocsfgff('csu')}
+\dontrun{
+download.Spegff('eco', 'tmpEco')
+}
 }
 \author{
+Yulong Niu \email{niuylscu@gmail.com}
+
 Yulong Niu \email{niuylscu@gmail.com}
 }
 
