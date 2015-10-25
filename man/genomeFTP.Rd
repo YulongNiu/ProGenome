@@ -3,12 +3,15 @@
 \name{GetSpeFtpUrl}
 \alias{AutoSpeFtpUrl}
 \alias{GetSpeFtpUrl}
+\alias{KEGGSpe2NCBIAss}
 \alias{LatestAss}
 \alias{ListFileFtpUrl}
 \alias{read.gff}
 \title{Retrieve genome FTP URL}
 \usage{
 GetSpeFtpUrl(KEGGSpe, database = "GenBank")
+
+KEGGSpe2NCBIAss(KEGGSpe)
 
 LatestAss(assNum)
 
@@ -36,7 +39,9 @@ read.gff(filePath, isurl = FALSE, isgz = FALSE)
 \value{
 FTP url.
 
-The latest assembly number
+KEGGSpe2NCBIAss(): NCBI assembly ID
+
+LatestAss(): latest assembly number
 
 AutoSpeFtpUrl(): RefSeq or GenBank FTP url
 
@@ -72,6 +77,8 @@ draliFiles <- ListFileFtpUrl(draliUrl)
 }
 }
 \author{
+Yulong Niu \email{niuylscu@gmail.com}
+
 Yulong Niu \email{niuylscu@gmail.com}
 
 Yulong Niu \email{niuylscu@gmail.com}

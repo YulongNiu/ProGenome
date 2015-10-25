@@ -89,11 +89,9 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 
 ##' @inheritParams getGenomicGenes
 ##' @return KEGGSpe2NCBIAss(): NCBI assembly ID
-##' @examples
-##' KEGGSpe2NCBIAss('vce')
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
-##' @importFrom KEGG getKEGGSpeInfo
+##' @importFrom KEGGAPI getKEGGSpeInfo
 ##' @importFrom xml2 read_xml xml_find_all xml_text
 ##' @keywords internal
 ##'
