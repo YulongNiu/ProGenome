@@ -45,7 +45,7 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ## Assembly: GCF_000005845.2
   assNum <- str_extract(sourceEle, 'Assembly: \\w+[\\.\\w]*')
   assNum <- sapply(strsplit(assNum, split = ': ', fixed = TRUE), '[[', 2)
-  
+  ## assNum <- KEGGSpe2NCBIAss(KEGGSpe)
   ## update to the lastest ass number
   assNum <- LatestAss(assNum)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,8 +86,44 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 }
 
 
+
+##' @inheritParams getGenomicGenes
+##' @return KEGGSpe2NCBIAss(): NCBI assembly ID
+##' @examples
+##' KEGGSpe2NCBIAss('vce')
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @rdname genomeFTP
+##' @importFrom KEGG getKEGGSpeInfo
+##' @importFrom xml2 read_xml xml_find_all xml_text
+##' @keywords internal
+##'
+##' 
+KEGGSpe2NCBIAss <- function(KEGGSpe) {
+
+  ## KEGG species --> NCBI taxonomy ID
+  speInfo <- getKEGGSpeInfo(KEGGSpe)
+  sourceEle <- speInfo$Taxonomy
+  taxNum <- sapply(strsplit(sourceEle,
+                            split = ': ',
+                            fixed = TRUE),
+                   '[[',
+                   2)
+
+  ## elink to assembly id
+  linkUrl <- paste0('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=taxonomy&db=assembly&id=', taxNum, '&retmode=xml')
+  linkXml <- read_xml(linkUrl)
+
+  assNumPath <- './/LinkSetDb[LinkName="taxonomy_assembly"]/Link/Id'
+  assNumNode <- xml_find_all(linkXml, assNumPath)
+  assNum <- xml_text(assNumNode)
+
+  return(assNum)
+}
+
+
+
 ##' @param assNum assembly number or the genome GenBank/RefSeq number
-##' @return The latest assembly number
+##' @return LatestAss(): latest assembly number
 ##' @importFrom xml2 read_html xml_find_all xml_children xml_attr
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
