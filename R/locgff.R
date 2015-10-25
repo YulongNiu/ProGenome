@@ -158,7 +158,7 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     if (md5sum(gffFile) == ExtractGffMd5(md5File)) {
       break
     } else {
-      print('Md5sum check failed. Try to download files again. \n')
+      print('Md5sum check failed. Try to download files again.')
     }
     
   }
