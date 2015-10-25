@@ -22,9 +22,19 @@
 ##' ## read in gff file
 ##' gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ##' ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
+##'
+##' ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
+##' gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
+##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+##'
+##' ## read in the dra gff file in local disk
+##' gffPath <- system.file("extdata", "dra.gff", package = "ProGenome")
+##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
+##' 
 ##' \dontrun{
-##' draliUrl <- GetSpeFtpUrl('dra')
-##' draliFiles <- ListFileFtpUrl(draliUrl)
+##' ## read in dra gff files through FTP URL
+##' draUrl <- AutoSpeFtpUrl('dra')
+##' dragff <- ListFileFtpUrl(draliUrl)
 ##' }
 ##' @importFrom KEGGAPI getKEGGSpeInfo
 ##' @importFrom stringr str_extract str_detect
