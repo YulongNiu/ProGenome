@@ -124,7 +124,7 @@ KEGGSpe2NCBIAss <- function(KEGGSpe) {
 
 ##' @param assNum assembly number or the genome GenBank/RefSeq number
 ##' @return LatestAss(): latest assembly number
-##' @importFrom xml2 read_html xml_find_all xml_children xml_attr
+##' @importFrom xml2 read_html xml_find_all xml_text
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @keywords internal
@@ -137,12 +137,12 @@ LatestAss <- function(assNum) {
   assXml <- read_html(assUrl)
 
   ## find history table
-  assTable <- xml_find_all(assXml, './/div[@id="asb_history"]')
   ## lastest ass number is always at the top
   ## first td contains the lastest ass number
-  asstd <- xml_find_all(assTable, './/td')[[1]]
-  assHref <- xml_children(asstd)[[1]]
-  newAssUrl <- xml_attr(assHref, 'href')
+  ## <div id="asb_history"> --> .. --> 1st <td> --> <a href="BINGO">
+  hrefPath <- './/div[@id="asb_history"]/descendant::td[1]/a/@href'
+  assHref <- xml_find_all(assXml, hrefPath)
+  newAssUrl <- xml_text(assHref)
 
   ## get the ass number
   newAss <- unlist(strsplit(newAssUrl, split = '/', fixed = TRUE))
