@@ -3,11 +3,14 @@
 \name{GetSpeFtpUrl}
 \alias{AutoSpeFtpUrl}
 \alias{GetSpeFtpUrl}
+\alias{LatestAss}
 \alias{ListFileFtpUrl}
 \alias{read.gff}
 \title{Retrieve genome FTP URL}
 \usage{
 GetSpeFtpUrl(KEGGSpe, database = "GenBank")
+
+LatestAss(assNum)
 
 AutoSpeFtpUrl(KEGGSpe)
 
@@ -20,6 +23,8 @@ read.gff(filePath, isurl = FALSE, isgz = FALSE)
 
 \item{database}{"GenBank", "RefSeq", or c("GenBank", "RefSeq").}
 
+\item{assNum}{assembly number or the genome GenBank/RefSeq number}
+
 \item{ftpUrl}{FTP url that can be the output of function  getFtpUrl()}
 
 \item{filePath}{A local file path or a web url.}
@@ -30,6 +35,8 @@ read.gff(filePath, isurl = FALSE, isgz = FALSE)
 }
 \value{
 FTP url.
+
+The latest assembly number
 
 AutoSpeFtpUrl(): RefSeq or GenBank FTP url
 
@@ -72,8 +79,11 @@ Yulong Niu \email{niuylscu@gmail.com}
 Yulong Niu \email{niuylscu@gmail.com}
 
 Yulong Niu \email{niuylscu@gmail.com}
+
+Yulong Niu \email{niuylscu@gmail.com}
 }
 \references{
 How to read in gz files into R from FTP URL \url{https://stackoverflow.com/questions/9548630/read-gzipped-csv-directly-from-a-url-in-r}
 }
+\keyword{internal}
 

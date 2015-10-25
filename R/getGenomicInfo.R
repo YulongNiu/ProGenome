@@ -45,6 +45,9 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ## Assembly: GCF_000005845.2
   assNum <- str_extract(sourceEle, 'Assembly: \\w+[\\.\\w]*')
   assNum <- sapply(strsplit(assNum, split = ': ', fixed = TRUE), '[[', 2)
+  
+  ## update to the lastest ass number
+  assNum <- LatestAss(assNum)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   ##~~~~~~~~~~~~~~~~~~~~~~FTP URL~~~~~~~~~~~~~~~~~~~
@@ -81,6 +84,38 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   
   return(ftpUrl)
 }
+
+
+##' @param assNum assembly number or the genome GenBank/RefSeq number
+##' @return The latest assembly number
+##' @importFrom xml2 read_html xml_find_all xml_children xml_attr
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @rdname genomeFTP
+##' @keywords internal
+##'
+##' 
+LatestAss <- function(assNum) {
+
+  ## input assembly number
+  assUrl <- paste0('http://www.ncbi.nlm.nih.gov/assembly/', assNum)
+  assXml <- read_html(assUrl)
+
+  ## find history table
+  assTable <- xml_find_all(assXml, './/div[@id="asb_history"]')
+  ## lastest ass number is always at the top
+  ## first td contains the lastest ass number
+  asstd <- xml_find_all(assTable, './/td')[[1]]
+  assHref <- xml_children(asstd)[[1]]
+  newAssUrl <- xml_attr(assHref, 'href')
+
+  ## get the ass number
+  newAss <- unlist(strsplit(newAssUrl, split = '/', fixed = TRUE))
+  newAss <- newAss[length(newAss)]
+
+  return(newAss)
+  
+}
+
 
 
 ##' @inheritParams getGenomicGenes
