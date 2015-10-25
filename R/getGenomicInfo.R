@@ -22,9 +22,19 @@
 ##' ## read in gff file
 ##' gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ##' ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
+##'
+##' ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
+##' gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
+##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+##'
+##' ## read in the dra gff file in local disk
+##' gffPath <- system.file("extdata", "dra.gff", package = "ProGenome")
+##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
+##' 
 ##' \dontrun{
-##' draliUrl <- GetSpeFtpUrl('dra')
-##' draliFiles <- ListFileFtpUrl(draliUrl)
+##' ## read in dra gff files through FTP URL
+##' draUrl <- AutoSpeFtpUrl('dra')
+##' dragff <- ListFileFtpUrl(draliUrl)
 ##' }
 ##' @importFrom KEGGAPI getKEGGSpeInfo
 ##' @importFrom stringr str_extract str_detect
@@ -45,7 +55,7 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ## Assembly: GCF_000005845.2
   assNum <- str_extract(sourceEle, 'Assembly: \\w+[\\.\\w]*')
   assNum <- sapply(strsplit(assNum, split = ': ', fixed = TRUE), '[[', 2)
-  
+  ## assNum <- KEGGSpe2NCBIAss(KEGGSpe)
   ## update to the lastest ass number
   assNum <- LatestAss(assNum)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,9 +96,43 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 }
 
 
+
+##' @inheritParams getGenomicGenes
+##' @return KEGGSpe2NCBIAss(): NCBI assembly ID
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @rdname genomeFTP
+##' @importFrom KEGGAPI getKEGGSpeInfo
+##' @importFrom xml2 read_xml xml_find_all xml_text
+##' @keywords internal
+##'
+##' 
+KEGGSpe2NCBIAss <- function(KEGGSpe) {
+
+  ## KEGG species --> NCBI taxonomy ID
+  speInfo <- getKEGGSpeInfo(KEGGSpe)
+  sourceEle <- speInfo$Taxonomy
+  taxNum <- sapply(strsplit(sourceEle,
+                            split = ': ',
+                            fixed = TRUE),
+                   '[[',
+                   2)
+
+  ## elink to assembly id
+  linkUrl <- paste0('http://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi?dbfrom=taxonomy&db=assembly&id=', taxNum, '&retmode=xml')
+  linkXml <- read_xml(linkUrl)
+
+  assNumPath <- './/LinkSetDb[LinkName="taxonomy_assembly"]/Link/Id'
+  assNumNode <- xml_find_all(linkXml, assNumPath)
+  assNum <- xml_text(assNumNode)
+
+  return(assNum)
+}
+
+
+
 ##' @param assNum assembly number or the genome GenBank/RefSeq number
-##' @return The latest assembly number
-##' @importFrom xml2 read_html xml_find_all xml_children xml_attr
+##' @return LatestAss(): latest assembly number
+##' @importFrom xml2 read_html xml_find_all xml_text
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @keywords internal
@@ -101,12 +145,12 @@ LatestAss <- function(assNum) {
   assXml <- read_html(assUrl)
 
   ## find history table
-  assTable <- xml_find_all(assXml, './/div[@id="asb_history"]')
   ## lastest ass number is always at the top
   ## first td contains the lastest ass number
-  asstd <- xml_find_all(assTable, './/td')[[1]]
-  assHref <- xml_children(asstd)[[1]]
-  newAssUrl <- xml_attr(assHref, 'href')
+  ## <div id="asb_history"> --> .. --> 1st <td> --> <a href="BINGO">
+  hrefPath <- './/div[@id="asb_history"]/descendant::td[1]/a/@href'
+  assHref <- xml_find_all(assXml, hrefPath)
+  newAssUrl <- xml_text(assHref)
 
   ## get the ass number
   newAss <- unlist(strsplit(newAssUrl, split = '/', fixed = TRUE))

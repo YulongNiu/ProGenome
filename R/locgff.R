@@ -1,75 +1,44 @@
-##' Get genomic genes location of KEGG species from NCBI gff files
+##' Get genomic genes location
 ##'
-##' getLocsfgff(): get genomic gene location information from gff file. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank.
+##' GetLocsfgff(): get genomic gene location information from gff matrix. The whole genomic gene are divided by chromosomes and plasmids (if the organism has).
 ##'
+##' GetLocsfKEGGSpe(): get genes locus of KEGG species from NCBI gff files. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank. The prefix of locus name is the abbreviation of KEGG genomes.
+##'
+##' ExtractLocs(): extract gene location from gff raw file.
+##' 
 ##' download.Spegff(): download gff and md5sum check files. If the md5sum check fails, download the files again until it passes.
+##' 
 ##' @title Get genomic gene locations from the gff file
-##' @inheritParams getGenomicGenes
+##' @param gffRawMat raw gff matrix.
+##' @param genePrefix prefix to locus gene names.
 ##' @return GetLocsfgff(): a list of genomes containing gene location information. The locus_tags is used for the gene names.
 ##' @examples
-##' draLocs <- GetLocsfgff('dra')
+##' ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
+##' gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
+##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+##'
+##' ## only extract whole locus without genome division
+##' locsRawMat <- ExtractLocs(dragff)
+##'
+##' ## whole locus divided by genomes and plasmids
+##' locusList <- GetLocsfgff(dragff, genePrefix = 'dra:')
+##' 
+##' ## get dra genomic locus through FTP URL
+##' draLocs <- GetLocsfKEGGSpe('dra')
 ##' \dontrun{
-##' hxaLocs <- GetLocsfgff('hxa')
-##' csuLocs <- GetLocsfgff('csu')}
+##' hxaLocs <- GetLocsfKEGGSpe('hxa')
+##' csuLocs <- GetLocsfKEGGSpe('csu')}
 ##' @rdname locsFromgff
+##' @seealso read.gff read in gff files
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
 ##'
 ##' 
-GetLocsfgff <- function(KEGGSpe) {
+GetLocsfgff <- function(gffRawMat, genePrefix = character(0)) {
 
-
-  getLocsTag <- function(annoStr) {
-    ## USE: extract locus_tags from a gff annotation information.
-    ## INPUT: character strings of gff annotation, which is sperated by ';'.
-    ## OUTPU: locus_tags
-    ## EXAMPLE:
-    ## testStr <- c('ID=gene1;Dbxref=GeneID:10795663;Name=HALXA_RS00010;gbkey=Gene;gene_biotype=protein_coding;locus_tag=HALXA_RS00010;old_locus_tag=Halxa_0687', 'ID=gene0;Dbxref=GeneID:10799347;Name=HALXA_RS00005;gbkey=Gene;gene_biotype=protein_coding;locus_tag=HALXA_RS00005;old_locus_tag=Halxa_0686')
-    ## testLocs <- getLocsTag(testStr)
-
-    locusSplit <- strsplit(annoStr, split = ';')
-    locusTag <- sapply(locusSplit, function(x) {
-      eachLocus <- x[grepl('^locus_tag=', x)]
-      eachLocus <- sapply(strsplit(eachLocus, split = '=', fixed = TRUE), '[[', 2)
-
-      return(eachLocus)
-    })
-    
-    return(locusTag)
-  }
-
- ExtractLocs <- function(gffMat) {
-    ## USE: extract gene location from gff raw file.
-    ## INPUT: 'gffMat' is the gff matrix.
-    ## OUTPUT: 4-column matrix, 1st is the locus_tags, 2ed is the from locus, 3rd is the to locus, 4th is the strand.
-
-    geneLogic <- gffMat[, 3] == 'gene'
-    geneMat <- gffMat[geneLogic, ]
-
-    locMat <- cbind(getLocsTag(geneMat[, 9]),
-                    geneMat[, 4],
-                    geneMat[, 5],
-                    geneMat[, 7],
-                    deparse.level = 0)
-    
-    colnames(locMat) <- c('GeneName', 'From', 'To', 'Strand')
-    rownames(locMat) <- NULL
-
-    return(locMat)
-  }
-
-  
-  ##~~~~~~~~~~~~~~~~~~~~read in gff files~~~~~~~~~~~~~~~~~~
-  speUrl <- AutoSpeFtpUrl(KEGGSpe)
-  speFiles <- ListFileFtpUrl(speUrl)
-  gffUrl <- speFiles[grepl('gff', speFiles)]
-  spegff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
-  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  ##~~~~~~~~~~~~~~~~get gene locs~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   ## identify using feature "Is_circular"
-  gTagIdx <- which(grepl('Is_circular=', spegff[, 9]))
-  gTag <- spegff[gTagIdx, 9]
+  gTagIdx <- which(grepl('Is_circular=', gffRawMat[, 9]))
+  gTag <- gffRawMat[gTagIdx, 9]
   pLoc <- grepl('plasmid', gTag)
   if (sum(pLoc) > 0) {
     ## must have one genome
@@ -82,25 +51,93 @@ GetLocsfgff <- function(KEGGSpe) {
 
   ## split genomes
   ## length(pLoc) == nrow(gMat) is TRUE
-  regionLoc <- c(gTagIdx, nrow(spegff))
+  regionLoc <- c(gTagIdx, nrow(gffRawMat))
   startVec <- regionLoc[-length(regionLoc)] + 1
   endVec <- regionLoc[-1] - 1
   gMat <- cbind(startVec, endVec)
 
   gList <- vector('list', length(gNames))
   for (i in 1:nrow(gMat)) {
-    eachLocMat <- ExtractLocs(spegff[gMat[i, 1] : gMat[i, 2], ])
-    eachLocMat[, 1] <- paste(KEGGSpe, eachLocMat[, 1], sep = ':')
+    eachLocMat <- ExtractLocs(gffRawMat[gMat[i, 1] : gMat[i, 2], ])
+    eachLocMat[, 1] <- paste0(genePrefix, eachLocMat[, 1])
     gList[[i]] <- eachLocMat
   }
   names(gList) <- gNames
-  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   return(gList)
 }
 
 
 
+
+##' @inheritParams getGenomicGenes
+##' @return GetLocsfKEGGSpe():  a list of genomes containing gene location information. The locus_tags is used for the gene names.
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @rdname locsFromgff
+##' @export
+##'
+##' 
+GetLocsfKEGGSpe <- function(KEGGSpe) {
+  
+  ##read in url gff gz files
+  speUrl <- AutoSpeFtpUrl(KEGGSpe)
+  speFiles <- ListFileFtpUrl(speUrl)
+  gffUrl <- speFiles[grepl('gff', speFiles)]
+  spegff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
+
+  gList <- GetLocsfgff(spegff, genePrefix = paste0(KEGGSpe, ':'))
+
+  return(gList)
+
+}
+
+
+##' @param annoStr character strings of gff annotation, which is sperated by ';'.
+##' @return locus_tags
+##' @rdname locsFromgff
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @keywords internal
+##'
+##' 
+GetLocsTag <- function(annoStr) {
+
+  locusSplit <- strsplit(annoStr, split = ';')
+  locusTag <- sapply(locusSplit, function(x) {
+    eachLocus <- x[grepl('^locus_tag=', x)]
+    eachLocus <- sapply(strsplit(eachLocus, split = '=', fixed = TRUE), '[[', 2)
+
+    return(eachLocus)
+  })
+  
+  return(locusTag)
+}
+
+
+
+
+##' @inheritParams GetLocsfgff
+##' @return ExtractLocs(): 4-column matrix, 1st is the locus_tags, 2ed is the from locus, 3rd is the to locus, 4th is the strand.
+##' @rdname locsFromgff
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @export
+##'
+##' 
+ExtractLocs <- function(gffRawMat) {
+  
+  geneLogic <- gffRawMat[, 3] == 'gene'
+  geneMat <- gffRawMat[geneLogic, ]
+
+  locMat <- cbind(GetLocsTag(geneMat[, 9]),
+                  geneMat[, 4],
+                  geneMat[, 5],
+                  geneMat[, 7],
+                  deparse.level = 0)
+  
+  colnames(locMat) <- c('GeneName', 'From', 'To', 'Strand')
+  rownames(locMat) <- NULL
+
+  return(locMat)
+}
 
 
 ##' @inheritParams getGenomicGenes
@@ -158,7 +195,7 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     if (md5sum(gffFile) == ExtractGffMd5(md5File)) {
       break
     } else {
-      print('Md5sum check failed. Try to download files again. \n')
+      print('Md5sum check failed. Try to download files again.')
     }
     
   }

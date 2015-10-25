@@ -3,12 +3,15 @@
 \name{GetSpeFtpUrl}
 \alias{AutoSpeFtpUrl}
 \alias{GetSpeFtpUrl}
+\alias{KEGGSpe2NCBIAss}
 \alias{LatestAss}
 \alias{ListFileFtpUrl}
 \alias{read.gff}
 \title{Retrieve genome FTP URL}
 \usage{
 GetSpeFtpUrl(KEGGSpe, database = "GenBank")
+
+KEGGSpe2NCBIAss(KEGGSpe)
 
 LatestAss(assNum)
 
@@ -36,7 +39,9 @@ read.gff(filePath, isurl = FALSE, isgz = FALSE)
 \value{
 FTP url.
 
-The latest assembly number
+KEGGSpe2NCBIAss(): NCBI assembly ID
+
+LatestAss(): latest assembly number
 
 AutoSpeFtpUrl(): RefSeq or GenBank FTP url
 
@@ -66,12 +71,24 @@ ecoliFiles <- ListFileFtpUrl(ecoliAutoUrl)
 ## read in gff file
 gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
+
+## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
+gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
+dragff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+
+## read in the dra gff file in local disk
+gffPath <- system.file("extdata", "dra.gff", package = "ProGenome")
+dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
+
 \dontrun{
-draliUrl <- GetSpeFtpUrl('dra')
-draliFiles <- ListFileFtpUrl(draliUrl)
+## read in dra gff files through FTP URL
+draUrl <- AutoSpeFtpUrl('dra')
+dragff <- ListFileFtpUrl(draliUrl)
 }
 }
 \author{
+Yulong Niu \email{niuylscu@gmail.com}
+
 Yulong Niu \email{niuylscu@gmail.com}
 
 Yulong Niu \email{niuylscu@gmail.com}
