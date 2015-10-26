@@ -25,6 +25,11 @@
 ##' 
 ##' ## get dra genomic locus through FTP URL
 ##' draLocs <- GetLocsfKEGGSpe('dra')
+##'
+##' ## two locus names for aac (Alicyclobacillus acidocaldarius subsp. acidocaldarius DSM 446)
+##' gzPath <- system.file("extdata", "aac.gff.gz", package = "ProGenome")
+##' aacgff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+##' 
 ##' \dontrun{
 ##' hxaLocs <- GetLocsfKEGGSpe('hxa')
 ##' csuLocs <- GetLocsfKEGGSpe('csu')}
@@ -93,7 +98,7 @@ GetLocsfKEGGSpe <- function(KEGGSpe) {
 
 
 ##' @param annoStr character strings of gff annotation, which is sperated by ';'.
-##' @return locus_tags
+##' @return a matrix. Locus_tags, old_locus_tags will also be return if provided.
 ##' @rdname locsFromgff
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @keywords internal
@@ -101,13 +106,17 @@ GetLocsfKEGGSpe <- function(KEGGSpe) {
 ##' 
 GetLocsTag <- function(annoStr) {
 
-  locusSplit <- strsplit(annoStr, split = ';')
-  locusTag <- sapply(locusSplit, function(x) {
-    eachLocus <- x[grepl('^locus_tag=', x)]
-    eachLocus <- sapply(strsplit(eachLocus, split = '=', fixed = TRUE), '[[', 2)
-
+  ## split the annotation
+  locusSplit <- strsplit(annoStr, split = ';', fixed = TRUE)
+  locusTag <- lapply(locusSplit, function(x) {
+    ## locus name 
+    eachLocus <- x[grepl('locus_tag=', x)]
+    eachLocusSplit <- strsplit(eachLocus, split = '=', fixed = TRUE)
+    eachLocus <- str_trim(sapply(eachLocusSplit, '[[', 2))
+    names(eachLocus) <- str_trim(sapply(eachLocusSplit, '[[', 1))
     return(eachLocus)
   })
+  locusTag <- do.call(rbind, locusTag)
   
   return(locusTag)
 }
@@ -132,8 +141,10 @@ ExtractLocs <- function(gffRawMat) {
                   geneMat[, 5],
                   geneMat[, 7],
                   deparse.level = 0)
-  
-  colnames(locMat) <- c('GeneName', 'From', 'To', 'Strand')
+
+  ## names to the last three column
+  last3Idx <- (ncol(locMat) - 2) : ncol(locMat)
+  colnames(locMat)[last3Idx] <- c('From', 'To', 'Strand')
   rownames(locMat) <- NULL
 
   return(locMat)
@@ -161,7 +172,7 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     ## OUTPUT: md5sum string
 
     mdMat <- read.table(mdfile, stringsAsFactors = FALSE)
-    mdStr <- mdMat[grepl('gff|md5checksums', mdMat[, 2]), 1]
+    mdStr <- mdMat[grepl('gff', mdMat[, 2]), 1]
 
     return(mdStr)
   }

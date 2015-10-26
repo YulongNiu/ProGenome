@@ -34,7 +34,7 @@ GetLocsfgff(): a list of genomes containing gene location information. The locus
 
 GetLocsfKEGGSpe():  a list of genomes containing gene location information. The locus_tags is used for the gene names.
 
-locus_tags
+a matrix. Locus_tags, old_locus_tags will also be return if provided.
 
 ExtractLocs(): 4-column matrix, 1st is the locus_tags, 2ed is the from locus, 3rd is the to locus, 4th is the strand.
 
@@ -65,6 +65,11 @@ locusList <- GetLocsfgff(dragff, genePrefix = 'dra:')
 
 ## get dra genomic locus through FTP URL
 draLocs <- GetLocsfKEGGSpe('dra')
+
+## two locus names for aac (Alicyclobacillus acidocaldarius subsp. acidocaldarius DSM 446)
+gzPath <- system.file("extdata", "aac.gff.gz", package = "ProGenome")
+aacgff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+
 \dontrun{
 hxaLocs <- GetLocsfKEGGSpe('hxa')
 csuLocs <- GetLocsfKEGGSpe('csu')}
