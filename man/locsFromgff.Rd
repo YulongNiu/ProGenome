@@ -36,7 +36,7 @@ GetLocsfKEGGSpe():  a list of genomes containing gene location information. The 
 
 a matrix. Locus_tags, old_locus_tags will also be return if provided.
 
-ExtractLocs(): 4-column matrix, 1st is the locus_tags, 2ed is the from locus, 3rd is the to locus, 4th is the strand.
+ExtractLocs(): 4 or 5-column matrix, 1st (or 1st and 2ed) is the locus_tags, the last three are start position, end postion, and DNA strand.
 
 download.Spegff(): download the gff and md5sum files.
 }

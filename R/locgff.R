@@ -125,7 +125,7 @@ GetLocsTag <- function(annoStr) {
 
 
 ##' @inheritParams GetLocsfgff
-##' @return ExtractLocs(): 4-column matrix, 1st is the locus_tags, 2ed is the from locus, 3rd is the to locus, 4th is the strand.
+##' @return ExtractLocs(): 4 or 5-column matrix, 1st (or 1st and 2ed) is the locus_tags, the last three are start position, end postion, and DNA strand.
 ##' @rdname locsFromgff
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
@@ -144,7 +144,7 @@ ExtractLocs <- function(gffRawMat) {
 
   ## names to the last three column
   last3Idx <- (ncol(locMat) - 2) : ncol(locMat)
-  colnames(locMat)[last3Idx] <- c('From', 'To', 'Strand')
+  colnames(locMat)[last3Idx] <- c('Start', 'End', 'Strand')
   rownames(locMat) <- NULL
 
   return(locMat)
