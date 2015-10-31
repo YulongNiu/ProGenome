@@ -12,6 +12,7 @@
 ##' @param gffRawMat raw gff matrix.
 ##' @param genePrefix prefix to locus gene names.
 ##' @return GetLocsfgff(): a list of genomes containing gene location information. The locus_tags is used for the gene names.
+##' @importFrom stringr str_extract_all str_sub
 ##' @examples
 ##' ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
 ##' gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
@@ -29,6 +30,7 @@
 ##' ## two locus names for aac (Alicyclobacillus acidocaldarius subsp. acidocaldarius DSM 446)
 ##' gzPath <- system.file("extdata", "aac.gff.gz", package = "ProGenome")
 ##' aacgff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+##' locusList <- GetLocsfgff(aacgff, genePrefix = 'aac:')
 ##' 
 ##' \dontrun{
 ##' hxaLocs <- GetLocsfKEGGSpe('hxa')
@@ -41,18 +43,22 @@
 ##' 
 GetLocsfgff <- function(gffRawMat, genePrefix = character(0)) {
 
-  ## identify using feature "Is_circular"
+  ## identify using feature "Is_circular" to select genomes and plasmids
   gTagIdx <- which(grepl('Is_circular=', gffRawMat[, 9]))
   gTag <- gffRawMat[gTagIdx, 9]
   pLoc <- grepl('plasmid', gTag)
   if (sum(pLoc) > 0) {
-    ## must have one genome
-    gNames <- c(paste0('genome', 1:sum(!pLoc)),
-                paste0('plasmid', 1:sum(pLoc)))
+    ## must have at least one genome
+    gNames <- character(length(pLoc))
+    ## first genome names
+    gNames[!pLoc] <- paste0('genome', 1:sum(!pLoc))
+    ## second plasmid names
+    pNames <- unlist(str_extract_all(gTag, 'plasmid-name=.+?;'))
+    pNames <- str_sub(pNames, start = 14, end = -2)
+    gNames[pLoc] <- pNames
   } else {
     gNames <- paste0('genome', 1:sum(!pLoc))
   }
-
 
   ## split genomes
   ## length(pLoc) == nrow(gMat) is TRUE

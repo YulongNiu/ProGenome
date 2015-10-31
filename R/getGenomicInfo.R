@@ -19,6 +19,7 @@
 ##' ecoliAutoUrl <- AutoSpeFtpUrl('eco')
 ##' ## list E. coli FTP files
 ##' ecoliFiles <- ListFileFtpUrl(ecoliAutoUrl)
+##' 
 ##' ## read in gff file
 ##' gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ##' ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
