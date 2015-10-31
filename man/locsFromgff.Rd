@@ -69,6 +69,7 @@ draLocs <- GetLocsfKEGGSpe('dra')
 ## two locus names for aac (Alicyclobacillus acidocaldarius subsp. acidocaldarius DSM 446)
 gzPath <- system.file("extdata", "aac.gff.gz", package = "ProGenome")
 aacgff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
+locusList <- GetLocsfgff(aacgff, genePrefix = 'aac:')
 
 \dontrun{
 hxaLocs <- GetLocsfKEGGSpe('hxa')
