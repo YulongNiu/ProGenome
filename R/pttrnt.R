@@ -1,13 +1,28 @@
 ##' Extract and write old ptt and rnt
 ##'
-##' \code{ExtractPtt()}:
+##' \code{ExtractPtt()}: Extract ptt from the featureTable.
 ##'
+##' \code{ExtractRnt()}: Extract rnt from the featureTable.
 ##'
-##' @title
-##' @param featureTable
+##' \code{write.ptt()}: Write the ptt file.
+##'
+##' \code{write.rnt()}: Write the rnt file.
+##' @title ptt and rnt
+##' @param featureTable A \code{matrix} represents the feature table retrieved from the NCBI ftp.
 ##' @return
+##' \code{ExtractPtt()}: Extract ptt from the featureTable.
+##'
+##' \code{ExtractRnt()}: Extract rnt from the featureTable.
 ##' @examples
+##' gzPath <- system.file('extdata', 'eco.feature_table.txt.gz', package = 'ProGenome')
+##' ft <- read.gff(gzPath)
+##'
+##' ptt <- ExtractPtt(ft)
+##' rnt <- ExtarctRnt(rnt)
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @rdname pttrnt
+##' @export
+##'
 ExtractPtt <- function(featureTable) {
 
   geneTable <- featureTable[featureTable[, 1] == 'gene' &
@@ -26,6 +41,10 @@ ExtractPtt <- function(featureTable) {
 }
 
 
+##' @inheritParams ExtractPtt
+##' @rdname pttrnt
+##' @export
+##'
 ExtractRnt <- function(featureTable) {
 
   rnaTable <- featureTable[featureTable[, 1] != 'gene' &
