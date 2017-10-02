@@ -35,12 +35,13 @@
 ##' \dontrun{
 ##' ## read in dra gff files through FTP URL
 ##' draUrl <- AutoSpeFtpUrl('dra')
-##' dragff <- ListFileFtpUrl(draliUrl)
+##' dragff <- ListFileFtpUrl(draUrl)
+##' dragff <- read.gff(dragff[grepl('gff', dragff)])
 ##' }
 ##' @importFrom KEGGAPI getKEGGSpeInfo
 ##' @importFrom stringr str_extract
 ##' @importFrom xml2 read_html xml_find_all xml_text
-##' @importFrom magrittr %>%
+##' @importFrom magrittr %>% %<>%
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @export
@@ -78,6 +79,9 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ftpUrl <- ftpPath %>%
     xml_find_all(webXml, .) %>%
     xml_text
+
+  ## add '/' at last
+  ftpUrl %<>% paste0('/')
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   return(ftpUrl)
