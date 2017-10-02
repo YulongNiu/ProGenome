@@ -3,11 +3,11 @@
 ##' GetSpeFtpUrl(): get the FTP url storing genome information from GenBank or RefSeq database. This function is mainly used to get the species genome assembly information.
 ##'
 ##' AutoSpeFtpUrl(): automatically choose the FTP url. This function trys the RefSeq at first and then GenBank.
-##' 
+##'
 ##' ListFtpFileUrl(): list the file download FTP urls.
-##' 
+##'
 ##' read.gff(): read in a raw gff file (or gz file) from the local disk or web url.
-##' 
+##'
 ##' @title Retrieve genome FTP URL
 ##' @inheritParams getGenomicGenes
 ##' @param database "GenBank", "RefSeq", or c("GenBank", "RefSeq").
@@ -19,33 +19,34 @@
 ##' ecoliAutoUrl <- AutoSpeFtpUrl('eco')
 ##' ## list E. coli FTP files
 ##' ecoliFiles <- ListFileFtpUrl(ecoliAutoUrl)
+##'
 ##' ## read in gff file
 ##' gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ##' ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
 ##'
 ##' ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
-##' gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
+##' gzPath <- system.file('extdata', 'dra.gff.gz', package = 'ProGenome')
 ##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
 ##'
 ##' ## read in the dra gff file in local disk
-##' gffPath <- system.file("extdata", "dra.gff", package = "ProGenome")
+##' gffPath <- system.file('extdata', 'dra.gff', package = 'ProGenome')
 ##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
-##' 
+##'
 ##' \dontrun{
 ##' ## read in dra gff files through FTP URL
 ##' draUrl <- AutoSpeFtpUrl('dra')
-##' dragff <- ListFileFtpUrl(draliUrl)
+##' dragff <- ListFileFtpUrl(draUrl)
+##' dragff <- read.gff(dragff[grepl('gff', dragff)])
 ##' }
 ##' @importFrom KEGGAPI getKEGGSpeInfo
-##' @importFrom stringr str_extract str_detect
-##' @importFrom RCurl getURL
-##' @importFrom xml2 read_xml xml_attr xml_text
-##' @importFrom foreach foreach %do%
+##' @importFrom stringr str_extract
+##' @importFrom xml2 read_html xml_find_all xml_text
+##' @importFrom magrittr %>% %<>%
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @export
 ##'
-##' 
+##'
 GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 
   ##~~~~~~~~~~~~~~assembly ID~~~~~~~~~~~~~~~~~~~~~
@@ -54,44 +55,35 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 
   ## Assembly: GCF_000005845.2
   assNum <- str_extract(sourceEle, 'Assembly: \\w+[\\.\\w]*')
-  assNum <- sapply(strsplit(assNum, split = ': ', fixed = TRUE), '[[', 2)
-  ## assNum <- KEGGSpe2NCBIAss(KEGGSpe)
-  ## update to the lastest ass number
-  assNum <- LatestAss(assNum)
+  assNum <- assNum %>%
+    strsplit(split = ': ', fixed = TRUE) %>%
+    sapply('[[', 2)
+
+  ## ## update to the lastest ass number
+  ## assNum <- LatestAss(assNum)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   ##~~~~~~~~~~~~~~~~~~~~~~FTP URL~~~~~~~~~~~~~~~~~~~
-  ## collapse database
-  database <- paste(database, collapse = '|')
-  
   ## NCBI assembly url
-  assBaseUrl <- 'http://www.ncbi.nlm.nih.gov/assembly/'
+  assBaseUrl <- 'https://www.ncbi.nlm.nih.gov/assembly/'
   assUrl <- paste0(assBaseUrl, assNum)
+  webXml <- read_html(assUrl)
 
-  webStr <- getURL(assUrl)
-  webVec <- unlist(strsplit(webStr, split = '\n', fixed = TRUE))
-  matchPattern <- paste0('(', database, ')', ' FTP site')
-  ftpLine <- webVec[str_detect(webVec, matchPattern)]
-
-  ## find url
-  ftpUrl <- foreach(i = 1:length(ftpLine), .combine = c) %do% {
-    eachFtpXml <- read_xml(ftpLine[i])
-    eachFtpUrl <- xml_attr(eachFtpXml, 'href')
-    eachName <- sapply(strsplit(xml_text(eachFtpXml),
-                                ' ',
-                                fixed = TRUE),
-                       '[[',
-                       1)
-    names(eachFtpUrl) <- eachName
-    return(eachFtpUrl)
+  ## set ftpPath <a href=''>Download the RefSeq assembly</a>
+  if(length(database) == 1) {
+    ftpPath <- sub('database', database, './/a[match(text(), "database assembly")]/@href')
+  } else {
+    ftpPath <- './/a[contains(text(), "GenBank assembly")]/@href | .//a[contains(text(), "RefSeq assembly")]/@href'
   }
-  
-  ## ftp url often point to a folder
-  ftpUrlNames <- names(ftpUrl)
-  ftpUrl <- paste0(ftpUrl, '/')
-  names(ftpUrl) <- ftpUrlNames
-  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
+
+  ftpUrl <- ftpPath %>%
+    xml_find_all(webXml, .) %>%
+    xml_text
+
+  ## add '/' at last
+  ftpUrl %<>% paste0('/')
+  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   return(ftpUrl)
 }
 
@@ -105,7 +97,7 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 ##' @importFrom xml2 read_xml xml_find_all xml_text
 ##' @keywords internal
 ##'
-##' 
+##'
 KEGGSpe2NCBIAss <- function(KEGGSpe) {
 
   ## KEGG species --> NCBI taxonomy ID
@@ -137,7 +129,7 @@ KEGGSpe2NCBIAss <- function(KEGGSpe) {
 ##' @rdname genomeFTP
 ##' @keywords internal
 ##'
-##' 
+##'
 LatestAss <- function(assNum) {
 
   ## input assembly number
@@ -157,7 +149,7 @@ LatestAss <- function(assNum) {
   newAss <- newAss[length(newAss)]
 
   return(newAss)
-  
+
 }
 
 
@@ -168,13 +160,16 @@ LatestAss <- function(assNum) {
 ##' @rdname genomeFTP
 ##' @export
 ##'
-##' 
+##'
 AutoSpeFtpUrl <- function(KEGGSpe) {
   speUrl <- GetSpeFtpUrl(KEGGSpe, database = c('GenBank', 'RefSeq'))
 
   if (length(speUrl) == 2) {
+    ## RefSeq --> GCF
+    ## GenBank --> GCA
     ## choose RefSeq
-    speUrl <- speUrl[names(speUrl) == 'RefSeq']
+
+    speUrl <- speUrl[grepl('GCF', speUrl)]
   } else {}
 
   return(speUrl)
@@ -188,9 +183,9 @@ AutoSpeFtpUrl <- function(KEGGSpe) {
 ##' @rdname genomeFTP
 ##' @export
 ##'
-##' 
+##'
 ListFileFtpUrl <- function(ftpUrl) {
-  
+
   fileStr <- getURL(ftpUrl, dirlistonly = TRUE)
   fileVec <- unlist(strsplit(fileStr, split = '\n', fixed = TRUE))
 
@@ -204,13 +199,14 @@ ListFileFtpUrl <- function(ftpUrl) {
 ##' @param filePath A local file path or a web url.
 ##' @param isurl Whether a url (TRUE) or not (FALSE).
 ##' @param isgz Whether a gzfile (TRUE) or not (FALSE).
-##' @return read.gff(): a table of raw gff file
+##' @return read.gff(): a table of raw gff/feature_table file
+##' @importFrom utils read.table
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @references How to read in gz files into R from FTP URL \url{https://stackoverflow.com/questions/9548630/read-gzipped-csv-directly-from-a-url-in-r}
 ##' @export
 ##'
-##' 
+##'
 read.gff <- function(filePath, isurl = FALSE, isgz = FALSE) {
 
   if (isurl && isgz) {
@@ -229,7 +225,7 @@ read.gff <- function(filePath, isurl = FALSE, isgz = FALSE) {
     ## read gff file from local disk
     conStream <- file(filePath)
   }
-  
+
   eachLine <- textConnection(readLines(conStream))
   close(conStream)
   gffMat <- read.table(eachLine,
