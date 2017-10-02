@@ -5,7 +5,7 @@
 \alias{GetLocsfKEGGSpe}
 \alias{GetLocsTag}
 \alias{ExtractLocs}
-\alias{download.Spegff}
+\alias{download.SpeAnno}
 \title{Get genomic gene locations from the gff file}
 \usage{
 GetLocsfgff(gffRawMat, genePrefix = character(0))
@@ -16,7 +16,7 @@ GetLocsTag(annoStr)
 
 ExtractLocs(gffRawMat)
 
-download.Spegff(KEGGSpe, saveFolder)
+download.SpeAnno(KEGGSpe, pattern, saveFolder)
 }
 \arguments{
 \item{gffRawMat}{raw gff matrix.}
@@ -26,6 +26,8 @@ download.Spegff(KEGGSpe, saveFolder)
 \item{KEGGSpe}{A KEGG species ID}
 
 \item{annoStr}{character strings of gff annotation, which is sperated by ';'.}
+
+\item{pattern}{A \code{character string} whether "gff" or "feature_table"}
 
 \item{saveFolder}{A folder to save gff and md5sum check files. If the folder does not exist, then creat a one at first.}
 }
@@ -38,7 +40,7 @@ a matrix. Locus_tags, old_locus_tags will also be return if provided.
 
 ExtractLocs(): 4 or 5-column matrix, 1st (or 1st and 2ed) is the locus_tags, the last three are start position, end postion, and DNA strand.
 
-download.Spegff(): download the gff and md5sum files.
+download.SpeAnno(): download the gff, feature_table, or md5sum files.
 }
 \description{
 Get genomic genes location
@@ -50,7 +52,7 @@ GetLocsfKEGGSpe(): get genes locus of KEGG species from NCBI gff files. It trys 
 
 ExtractLocs(): extract gene location from gff raw file.
 
-download.Spegff(): download gff and md5sum check files. If the md5sum check fails, download the files again until it passes.
+download.SpeAnno(): download gff/feature_table and md5sum check files. If the md5sum check fails, download the files again until it passes.
 }
 \examples{
 ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
@@ -75,7 +77,7 @@ locusList <- GetLocsfgff(aacgff, genePrefix = 'aac:')
 hxaLocs <- GetLocsfKEGGSpe('hxa')
 csuLocs <- GetLocsfKEGGSpe('csu')}
 \dontrun{
-download.Spegff('eco', 'tmpEco')
+download.SpeAnno('eco', 'gff', 'tmpEco')
 }
 }
 \seealso{

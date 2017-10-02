@@ -199,7 +199,7 @@ ListFileFtpUrl <- function(ftpUrl) {
 ##' @param filePath A local file path or a web url.
 ##' @param isurl Whether a url (TRUE) or not (FALSE).
 ##' @param isgz Whether a gzfile (TRUE) or not (FALSE).
-##' @return read.gff(): a table of raw gff file
+##' @return read.gff(): a table of raw gff/feature_table file
 ##' @importFrom utils read.table
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP

@@ -6,7 +6,7 @@
 ##'
 ##' ExtractLocs(): extract gene location from gff raw file.
 ##'
-##' download.Spegff(): download gff and md5sum check files. If the md5sum check fails, download the files again until it passes.
+##' download.SpeAnno(): download gff/feature_table and md5sum check files. If the md5sum check fails, download the files again until it passes.
 ##'
 ##' @title Get genomic gene locations from the gff file
 ##' @param gffRawMat raw gff matrix.
@@ -158,12 +158,13 @@ ExtractLocs <- function(gffRawMat) {
 
 
 ##' @inheritParams getGenomicGenes
+##' @param pattern A \code{character string} whether "gff" or "feature_table"
 ##' @param saveFolder A folder to save gff and md5sum check files. If the folder does not exist, then creat a one at first.
-##' @return download.Spegff(): download the gff and md5sum files.
+##' @return download.SpeAnno(): download the gff, feature_table, or md5sum files.
 ##' @rdname locsFromgff
 ##' @examples
 ##' \dontrun{
-##' download.Spegff('eco', 'tmpEco')
+##' download.SpeAnno('eco', 'gff', 'tmpEco')
 ##' }
 ##' @importFrom tools md5sum
 ##' @importFrom utils download.file
@@ -171,7 +172,7 @@ ExtractLocs <- function(gffRawMat) {
 ##' @export
 ##'
 ##'
-download.Spegff <- function(KEGGSpe, saveFolder){
+download.SpeAnno <- function(KEGGSpe, pattern, saveFolder){
 
   ## check folder
   if (!dir.exists(saveFolder)) {
@@ -183,7 +184,8 @@ download.Spegff <- function(KEGGSpe, saveFolder){
   speFiles <- ListFileFtpUrl(speUrl)
 
   ## select and download gff and md5sum check files
-  fileUrls <- speFiles[grepl('gff|md5checksums', speFiles)]
+  sumPat <- paste(pattern, 'md5checksums', sep = '|')
+  fileUrls <- speFiles[grepl(sumPat, speFiles)]
   splitNames <- strsplit(fileUrls, split = '/', fixed = TRUE)
   fileNames <- sapply(splitNames, function(x) {
     eachLast <- x[length(x)]
@@ -197,9 +199,9 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     }
 
     md5File <- file.path(saveFolder, fileNames[grepl('md5checksums', fileNames)])
-    gffFile <- file.path(saveFolder, fileNames[grepl('gff', fileNames)])
+    gffFile <- file.path(saveFolder, fileNames[grepl(pattern, fileNames)])
 
-    if (md5sum(gffFile) == ExtractGffMd5(md5File, 'gff')) {
+    if (md5sum(gffFile) == ExtractMd5(md5File, pattern)) {
       break
     } else {
       print('Md5sum check failed. Try to download files again.')
@@ -215,15 +217,16 @@ download.Spegff <- function(KEGGSpe, saveFolder){
 ##'
 ##' @title Extract md5sum
 ##' @param mdfile The md5sum file path.
-##' @param pattern File type.
+##' @inheritParams download.SpeAnno
 ##' @return A \code{Character} md5sum string.
 ##' @importFrom utils read.table
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @keywords internal
-ExtractGffMd5 <- function(mdfilePath, pattern) {
+ExtractMd5 <- function(mdfilePath, pattern) {
 
   mdMat <- read.table(mdfilePath, stringsAsFactors = FALSE)
   mdStr <- mdMat[grepl(pattern, mdMat[, 2]), 1]
 
   return(mdStr)
 }
+
