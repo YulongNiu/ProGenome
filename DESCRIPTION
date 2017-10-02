@@ -14,7 +14,9 @@ Imports:
     foreach,
     RCurl,
     xml2,
-    tools
+    tools,
+    utils,
+    magrittr
 ByteCompile: true
 License: GPL
 LazyData: true

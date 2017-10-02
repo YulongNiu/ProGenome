@@ -38,10 +38,9 @@
 ##' dragff <- ListFileFtpUrl(draliUrl)
 ##' }
 ##' @importFrom KEGGAPI getKEGGSpeInfo
-##' @importFrom stringr str_extract str_detect
-##' @importFrom RCurl getURL
-##' @importFrom xml2 read_xml xml_attr xml_text
-##' @importFrom foreach foreach %do%
+##' @importFrom stringr str_extract
+##' @importFrom xml2 read_html xml_find_all xml_text
+##' @importFrom magrittr %>%
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @export
@@ -55,44 +54,32 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 
   ## Assembly: GCF_000005845.2
   assNum <- str_extract(sourceEle, 'Assembly: \\w+[\\.\\w]*')
-  assNum <- sapply(strsplit(assNum, split = ': ', fixed = TRUE), '[[', 2)
-  ## assNum <- KEGGSpe2NCBIAss(KEGGSpe)
-  ## update to the lastest ass number
-  assNum <- LatestAss(assNum)
+  assNum <- assNum %>%
+    strsplit(split = ': ', fixed = TRUE) %>%
+    sapply('[[', 2)
+
+  ## ## update to the lastest ass number
+  ## assNum <- LatestAss(assNum)
   ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   ##~~~~~~~~~~~~~~~~~~~~~~FTP URL~~~~~~~~~~~~~~~~~~~
-  ## collapse database
-  database <- paste(database, collapse = '|')
-
   ## NCBI assembly url
-  assBaseUrl <- 'http://www.ncbi.nlm.nih.gov/assembly/'
+  assBaseUrl <- 'https://www.ncbi.nlm.nih.gov/assembly/'
   assUrl <- paste0(assBaseUrl, assNum)
+  webXml <- read_html(assUrl)
 
-  webStr <- getURL(assUrl)
-  webVec <- unlist(strsplit(webStr, split = '\n', fixed = TRUE))
-  matchPattern <- paste0('(', database, ')', ' FTP site')
-  ftpLine <- webVec[str_detect(webVec, matchPattern)]
-
-  ## find url
-  ftpUrl <- foreach(i = 1:length(ftpLine), .combine = c) %do% {
-    eachFtpXml <- read_xml(ftpLine[i])
-    eachFtpUrl <- xml_attr(eachFtpXml, 'href')
-    eachName <- sapply(strsplit(xml_text(eachFtpXml),
-                                ' ',
-                                fixed = TRUE),
-                       '[[',
-                       1)
-    names(eachFtpUrl) <- eachName
-    return(eachFtpUrl)
+  ## set ftpPath <a href=''>Download the RefSeq assembly</a>
+  if(length(database) == 1) {
+    ftpPath <- sub('database', database, './/a[match(text(), "database assembly")]/@href')
+  } else {
+    ftpPath <- './/a[contains(text(), "GenBank assembly")]/@href | .//a[contains(text(), "RefSeq assembly")]/@href'
   }
-  
-  ## ftp url often point to a folder
-  ftpUrlNames <- names(ftpUrl)
-  ftpUrl <- paste0(ftpUrl, '/')
-  names(ftpUrl) <- ftpUrlNames
-  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  
+
+  ftpUrl <- ftpPath %>%
+    xml_find_all(webXml, .) %>%
+    xml_text
+  ##~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   return(ftpUrl)
 }
 
@@ -106,7 +93,7 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 ##' @importFrom xml2 read_xml xml_find_all xml_text
 ##' @keywords internal
 ##'
-##' 
+##'
 KEGGSpe2NCBIAss <- function(KEGGSpe) {
 
   ## KEGG species --> NCBI taxonomy ID
@@ -138,7 +125,7 @@ KEGGSpe2NCBIAss <- function(KEGGSpe) {
 ##' @rdname genomeFTP
 ##' @keywords internal
 ##'
-##' 
+##'
 LatestAss <- function(assNum) {
 
   ## input assembly number
@@ -158,7 +145,7 @@ LatestAss <- function(assNum) {
   newAss <- newAss[length(newAss)]
 
   return(newAss)
-  
+
 }
 
 
@@ -169,13 +156,16 @@ LatestAss <- function(assNum) {
 ##' @rdname genomeFTP
 ##' @export
 ##'
-##' 
+##'
 AutoSpeFtpUrl <- function(KEGGSpe) {
   speUrl <- GetSpeFtpUrl(KEGGSpe, database = c('GenBank', 'RefSeq'))
 
   if (length(speUrl) == 2) {
+    ## RefSeq --> GCF
+    ## GenBank --> GCA
     ## choose RefSeq
-    speUrl <- speUrl[names(speUrl) == 'RefSeq']
+
+    speUrl <- speUrl[grepl('GCF', speUrl)]
   } else {}
 
   return(speUrl)
@@ -189,9 +179,9 @@ AutoSpeFtpUrl <- function(KEGGSpe) {
 ##' @rdname genomeFTP
 ##' @export
 ##'
-##' 
+##'
 ListFileFtpUrl <- function(ftpUrl) {
-  
+
   fileStr <- getURL(ftpUrl, dirlistonly = TRUE)
   fileVec <- unlist(strsplit(fileStr, split = '\n', fixed = TRUE))
 
