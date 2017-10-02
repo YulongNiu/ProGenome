@@ -18,7 +18,12 @@
 ##' ft <- read.gff(gzPath)
 ##'
 ##' ptt <- ExtractPtt(ft)
-##' rnt <- ExtarctRnt(rnt)
+##' rnt <- ExtractRnt(ft)
+##'
+##' \dontrun{
+##' write.ptt(ptt, 'eco.ptt')
+##' write.rnt(rnt, 'eco.rnt')
+##' }
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname pttrnt
 ##' @export
@@ -50,14 +55,48 @@ ExtractRnt <- function(featureTable) {
   rnaTable <- featureTable[featureTable[, 1] != 'gene' &
                            featureTable[, 1] != 'CDS', ]
 
-  rnt <- data.frame(Location = paste(geneTable[, 8], geneTable[, 9], sep = '..'),
-                    Strand = geneTable[, 10],
-                    Length = geneTable[, 18],
+  rnt <- data.frame(Location = paste(rnaTable[, 8], rnaTable[, 9], sep = '..'),
+                    Strand = rnaTable[, 10],
+                    Length = rnaTable[, 18],
                     PID = '-',
-                    Gene = geneTable[, 15],
-                    Synonym = geneTable[, 17],
+                    Gene = rnaTable[, 15],
+                    Synonym = rnaTable[, 17],
                     Code = '-',
                     COG = '-',
                     Product = '-')
   return(rnt)
+}
+
+
+##' @param ptt A \code{matrix} indicating the ptt matrix.
+##' @param file A \code{character vector} indicating the file path.
+##' @importFrom utils write.table
+##' @rdname pttrnt
+##' @export
+##'
+write.ptt <- function(ptt, file) {
+
+  f <- file(file, "w")
+
+  writeLines('ptt header for certain species.', f)
+  writeLines(paste(nrow(ptt), 'proteins'), f)
+  write.table(ptt, row.names = FALSE, quote = FALSE, f)
+
+  close(f)
+}
+
+##' @param rnt A \code{matrix} indicating the rnt matrix
+##' @inheritParams write.ptt
+##' @importFrom utils write.table
+##' @rdname pttrnt
+##' @export
+##'
+write.rnt <- function(rnt, file) {
+  f <- file(file, "w")
+
+  writeLines('rnt header for certain species.', f)
+  writeLines(paste(nrow(rnt), 'RNAs'), f)
+  write.table(rnt, row.names = FALSE, quote = FALSE, f)
+
+  close(f)
 }

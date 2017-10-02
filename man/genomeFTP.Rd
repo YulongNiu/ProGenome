@@ -47,7 +47,7 @@ AutoSpeFtpUrl(): RefSeq or GenBank FTP url
 
 ListFileFtpUrl(): a list of download FTP urls
 
-read.gff(): a table of raw gff file
+read.gff(): a table of raw gff/feature_table file
 }
 \description{
 Get genomic information NCBI FTP url
@@ -74,11 +74,11 @@ gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
 
 ## read in the dra (Deinococcus radiodurans R1) gff gz file in local disk
-gzPath <- system.file("extdata", "dra.gff.gz", package = "ProGenome")
+gzPath <- system.file('extdata', 'dra.gff.gz', package = 'ProGenome')
 dragff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
 
 ## read in the dra gff file in local disk
-gffPath <- system.file("extdata", "dra.gff", package = "ProGenome")
+gffPath <- system.file('extdata', 'dra.gff', package = 'ProGenome')
 dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
 
 \dontrun{
