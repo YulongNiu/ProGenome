@@ -5,9 +5,9 @@
 ##' GetLocsfKEGGSpe(): get genes locus of KEGG species from NCBI gff files. It trys the RefSeq database at first; if RefSeq is not found, then changes to the database to GenBank. The prefix of locus name is the abbreviation of KEGG genomes.
 ##'
 ##' ExtractLocs(): extract gene location from gff raw file.
-##' 
+##'
 ##' download.Spegff(): download gff and md5sum check files. If the md5sum check fails, download the files again until it passes.
-##' 
+##'
 ##' @title Get genomic gene locations from the gff file
 ##' @param gffRawMat raw gff matrix.
 ##' @param genePrefix prefix to locus gene names.
@@ -23,7 +23,7 @@
 ##'
 ##' ## whole locus divided by genomes and plasmids
 ##' locusList <- GetLocsfgff(dragff, genePrefix = 'dra:')
-##' 
+##'
 ##' ## get dra genomic locus through FTP URL
 ##' draLocs <- GetLocsfKEGGSpe('dra')
 ##'
@@ -31,7 +31,7 @@
 ##' gzPath <- system.file("extdata", "aac.gff.gz", package = "ProGenome")
 ##' aacgff <- read.gff(gzPath, isurl = FALSE, isgz = TRUE)
 ##' locusList <- GetLocsfgff(aacgff, genePrefix = 'aac:')
-##' 
+##'
 ##' \dontrun{
 ##' hxaLocs <- GetLocsfKEGGSpe('hxa')
 ##' csuLocs <- GetLocsfKEGGSpe('csu')}
@@ -40,7 +40,7 @@
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
 ##'
-##' 
+##'
 GetLocsfgff <- function(gffRawMat, genePrefix = character(0)) {
 
   ## identify using feature "Is_circular" to select genomes and plasmids
@@ -87,9 +87,9 @@ GetLocsfgff <- function(gffRawMat, genePrefix = character(0)) {
 ##' @rdname locsFromgff
 ##' @export
 ##'
-##' 
+##'
 GetLocsfKEGGSpe <- function(KEGGSpe) {
-  
+
   ##read in url gff gz files
   speUrl <- AutoSpeFtpUrl(KEGGSpe)
   speFiles <- ListFileFtpUrl(speUrl)
@@ -109,13 +109,13 @@ GetLocsfKEGGSpe <- function(KEGGSpe) {
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @keywords internal
 ##'
-##' 
+##'
 GetLocsTag <- function(annoStr) {
 
   ## split the annotation
   locusSplit <- strsplit(annoStr, split = ';', fixed = TRUE)
   locusTag <- lapply(locusSplit, function(x) {
-    ## locus name 
+    ## locus name
     eachLocus <- x[grepl('locus_tag=', x)]
     eachLocusSplit <- strsplit(eachLocus, split = '=', fixed = TRUE)
     eachLocus <- str_trim(sapply(eachLocusSplit, '[[', 2))
@@ -123,7 +123,7 @@ GetLocsTag <- function(annoStr) {
     return(eachLocus)
   })
   locusTag <- do.call(rbind, locusTag)
-  
+
   return(locusTag)
 }
 
@@ -136,9 +136,9 @@ GetLocsTag <- function(annoStr) {
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
 ##'
-##' 
+##'
 ExtractLocs <- function(gffRawMat) {
-  
+
   geneLogic <- gffRawMat[, 3] == 'gene'
   geneMat <- gffRawMat[geneLogic, ]
 
@@ -166,10 +166,11 @@ ExtractLocs <- function(gffRawMat) {
 ##' download.Spegff('eco', 'tmpEco')
 ##' }
 ##' @importFrom tools md5sum
+##' @importFrom utils read.table download.file
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
 ##'
-##' 
+##'
 download.Spegff <- function(KEGGSpe, saveFolder){
 
   ExtractGffMd5 <- function(mdfile) {
@@ -187,7 +188,7 @@ download.Spegff <- function(KEGGSpe, saveFolder){
   if (!dir.exists(saveFolder)) {
     dir.create(saveFolder)
   } else {}
-  
+
   ## FTP urls
   speUrl <- AutoSpeFtpUrl(KEGGSpe)
   speFiles <- ListFileFtpUrl(speUrl)
@@ -214,8 +215,7 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     } else {
       print('Md5sum check failed. Try to download files again.')
     }
-    
+
   }
 }
-  
 

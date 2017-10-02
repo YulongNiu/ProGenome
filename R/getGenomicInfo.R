@@ -3,11 +3,11 @@
 ##' GetSpeFtpUrl(): get the FTP url storing genome information from GenBank or RefSeq database. This function is mainly used to get the species genome assembly information.
 ##'
 ##' AutoSpeFtpUrl(): automatically choose the FTP url. This function trys the RefSeq at first and then GenBank.
-##' 
+##'
 ##' ListFtpFileUrl(): list the file download FTP urls.
-##' 
+##'
 ##' read.gff(): read in a raw gff file (or gz file) from the local disk or web url.
-##' 
+##'
 ##' @title Retrieve genome FTP URL
 ##' @inheritParams getGenomicGenes
 ##' @param database "GenBank", "RefSeq", or c("GenBank", "RefSeq").
@@ -19,7 +19,7 @@
 ##' ecoliAutoUrl <- AutoSpeFtpUrl('eco')
 ##' ## list E. coli FTP files
 ##' ecoliFiles <- ListFileFtpUrl(ecoliAutoUrl)
-##' 
+##'
 ##' ## read in gff file
 ##' gffUrl <- ecoliFiles[grepl('gff', ecoliFiles)]
 ##' ecoligff <- read.gff(gffUrl, isurl = TRUE, isgz = TRUE)
@@ -31,7 +31,7 @@
 ##' ## read in the dra gff file in local disk
 ##' gffPath <- system.file("extdata", "dra.gff", package = "ProGenome")
 ##' dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
-##' 
+##'
 ##' \dontrun{
 ##' ## read in dra gff files through FTP URL
 ##' draUrl <- AutoSpeFtpUrl('dra')
@@ -46,7 +46,7 @@
 ##' @rdname genomeFTP
 ##' @export
 ##'
-##' 
+##'
 GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
 
   ##~~~~~~~~~~~~~~assembly ID~~~~~~~~~~~~~~~~~~~~~
@@ -64,7 +64,7 @@ GetSpeFtpUrl <- function(KEGGSpe, database = 'GenBank') {
   ##~~~~~~~~~~~~~~~~~~~~~~FTP URL~~~~~~~~~~~~~~~~~~~
   ## collapse database
   database <- paste(database, collapse = '|')
-  
+
   ## NCBI assembly url
   assBaseUrl <- 'http://www.ncbi.nlm.nih.gov/assembly/'
   assUrl <- paste0(assBaseUrl, assNum)
@@ -206,12 +206,13 @@ ListFileFtpUrl <- function(ftpUrl) {
 ##' @param isurl Whether a url (TRUE) or not (FALSE).
 ##' @param isgz Whether a gzfile (TRUE) or not (FALSE).
 ##' @return read.gff(): a table of raw gff file
+##' @importFrom utils read.table
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @rdname genomeFTP
 ##' @references How to read in gz files into R from FTP URL \url{https://stackoverflow.com/questions/9548630/read-gzipped-csv-directly-from-a-url-in-r}
 ##' @export
 ##'
-##' 
+##'
 read.gff <- function(filePath, isurl = FALSE, isgz = FALSE) {
 
   if (isurl && isgz) {
@@ -230,7 +231,7 @@ read.gff <- function(filePath, isurl = FALSE, isgz = FALSE) {
     ## read gff file from local disk
     conStream <- file(filePath)
   }
-  
+
   eachLine <- textConnection(readLines(conStream))
   close(conStream)
   gffMat <- read.table(eachLine,
