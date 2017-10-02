@@ -84,7 +84,8 @@ dragff <- read.gff(gzPath, isurl = FALSE, isgz = FALSE)
 \dontrun{
 ## read in dra gff files through FTP URL
 draUrl <- AutoSpeFtpUrl('dra')
-dragff <- ListFileFtpUrl(draliUrl)
+dragff <- ListFileFtpUrl(draUrl)
+dragff <- read.gff(dragff[grepl('gff', dragff)])
 }
 }
 \references{

@@ -166,23 +166,12 @@ ExtractLocs <- function(gffRawMat) {
 ##' download.Spegff('eco', 'tmpEco')
 ##' }
 ##' @importFrom tools md5sum
-##' @importFrom utils read.table download.file
+##' @importFrom utils download.file
 ##' @author Yulong Niu \email{niuylscu@@gmail.com}
 ##' @export
 ##'
 ##'
 download.Spegff <- function(KEGGSpe, saveFolder){
-
-  ExtractGffMd5 <- function(mdfile) {
-    ## USE: extract md5sum string for gff file
-    ## INPUT: 'mdfile' is the md5sum file path
-    ## OUTPUT: md5sum string
-
-    mdMat <- read.table(mdfile, stringsAsFactors = FALSE)
-    mdStr <- mdMat[grepl('gff', mdMat[, 2]), 1]
-
-    return(mdStr)
-  }
 
   ## check folder
   if (!dir.exists(saveFolder)) {
@@ -210,7 +199,7 @@ download.Spegff <- function(KEGGSpe, saveFolder){
     md5File <- file.path(saveFolder, fileNames[grepl('md5checksums', fileNames)])
     gffFile <- file.path(saveFolder, fileNames[grepl('gff', fileNames)])
 
-    if (md5sum(gffFile) == ExtractGffMd5(md5File)) {
+    if (md5sum(gffFile) == ExtractGffMd5(md5File, 'gff')) {
       break
     } else {
       print('Md5sum check failed. Try to download files again.')
@@ -219,3 +208,22 @@ download.Spegff <- function(KEGGSpe, saveFolder){
   }
 }
 
+
+##' Extract md5sum for a given patterned files
+##'
+##' md5sum for the "gff" and "feature_table" files
+##'
+##' @title Extract md5sum
+##' @param mdfile The md5sum file path.
+##' @param pattern File type.
+##' @return A \code{Character} md5sum string.
+##' @importFrom utils read.table
+##' @author Yulong Niu \email{niuylscu@@gmail.com}
+##' @keywords internal
+ExtractGffMd5 <- function(mdfilePath, pattern) {
+
+  mdMat <- read.table(mdfilePath, stringsAsFactors = FALSE)
+  mdStr <- mdMat[grepl(pattern, mdMat[, 2]), 1]
+
+  return(mdStr)
+}
