@@ -1,6 +1,5 @@
 # The ignore files when I am writing an R package.
 *~
 .Rhistory
-.Rbuildignore
 .Rproj.user/
 .directory

@@ -80,7 +80,7 @@ write.ptt <- function(ptt, file) {
 
   writeLines('ptt header for certain species.', f)
   writeLines(paste(nrow(ptt), 'proteins'), f)
-  write.table(ptt, row.names = FALSE, quote = FALSE, f)
+  write.table(ptt, sep = '\t', row.names = FALSE, quote = FALSE, f)
 
   close(f)
 }
@@ -96,7 +96,7 @@ write.rnt <- function(rnt, file) {
 
   writeLines('rnt header for certain species.', f)
   writeLines(paste(nrow(rnt), 'RNAs'), f)
-  write.table(rnt, row.names = FALSE, quote = FALSE, f)
+  write.table(rnt, sep = '\t', row.names = FALSE, quote = FALSE, f)
 
   close(f)
 }
